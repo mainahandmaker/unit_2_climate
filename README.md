@@ -17,6 +17,8 @@ This unit will cover learning to program in base R. We'll explore data reading a
 
 #### Homework: HW_2_climate Due: 2/17/2021
 
+https://classroom.github.com/a/WrxXVKkk
+
 -  HW_2a_sea_level_rise - Assigned: 2/3/2021, Due: 2/17/2021
 
 -  HW_2b_ice_core_co2 - Assigned: 2/10/2021, Due: 2/17/2021
