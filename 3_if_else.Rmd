@@ -26,8 +26,9 @@ The `this` object should be a logical test or an R expression that evaluates to 
 For example, you could write an `if` statement that ensures some object, `num`, is positive. If `num < 0` is `TRUE`, R will multiply `num` by negative one, which will make `num` positive: 
 
 ```{r}
+# If num is negative, make it positive
 num = -2
-if (num < 0) {
+if (num < 0) {   
   num = num * -1
 }
 num

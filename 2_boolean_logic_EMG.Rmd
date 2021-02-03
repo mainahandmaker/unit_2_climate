@@ -1,0 +1,229 @@
+---
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.width=6, fig.asp = 0.618, collapse=TRUE) 
+```
+
+### Unit 2: Climate
+#### Lesson 2: Boolean Logic
+
+***
+
+### Logical Subsetting
+
+Do you remember R's logical data type? To recap, you can select values with a vector of `TRUE`s and `FALSE`s. The vector must be the same length as the dimension that you wish to subset. R will return every element that matches a TRUE:
+
+```{r}
+vec = c(1, 0, 2, 1)
+vec[c(FALSE, FALSE, TRUE, FALSE)]
+```
+
+At first glance, this system might seem impractical. Who wants to type out long vectors of TRUEs and FALSEs? No one. But you don't have to. You can let a logical test create a vector of TRUEs and FALSEs for you.
+
+#### Logical Tests
+
+A logical test is a comparison like "is one less than two?", `1 < 2`, or "is three greater than four?", `3 > 4`. R provides seven logical operators that you can use to make comparisons, shown below: 
+
+Table: R's Logical Operators
+
+|Operator|Syntax|Tests
+|--------|------|-----
+|`>`|`a > b`|Is a greater than b?
+|`>=`|`a >= b`|Is a greater than or equal to b?
+|`<`|`a < b`|Is a less than b?
+|`<=`|`a <= b`|Is a less than or equal to b?
+|`==`|`a == b`|Is a equal to b?
+|`!=`|`a != b`|Is a not equal to b?
+|`%in%`|`a %in% c(a, b, c)`|Is a in the group c(a, b, c)? 
+
+Each operator returns a `TRUE` or a `FALSE`. If you use an operator to compare vectors, R will do element-wise comparisons—just like it does with the arithmetic operators:
+
+```{r}
+1 > 2
+1 > c(0, 1, 2)
+c(1, 2, 3) == c(3, 2, 1)
+```
+
+`%in%` is the only operator that does not do normal element-wise execution. `%in%` tests whether the value(s) on the left side are in the vector on the right side. If you provide a vector on the left side, `%in%` will *not* pair up the values on the left with the values on the right and then do element-wise tests. Instead, `%in%` will independently test whether each value on the left is *somewhere* in the vector on the right: 
+
+```{r}
+1 %in% c(3, 4, 5)
+c(1, 2) %in% c(3, 4, 5)
+c(1, 2, 3) %in% c(3, 4, 5)
+c(1, 2, 3, 4) %in% c(3, 4, 5)
+```
+
+Notice that you test for equality with a double equals sign, `==`. Remember that a single equals sign `=` (as well as `<-`) is the assignment operator, not a Boolean operator. It is easy to forget and use `a = b` to test if `a` equals `b`. Unfortunately, you'll be in for a nasty surprise. R won't return a `TRUE` or `FALSE`, because it won't have to: `a` *will* equal `b`, because you just reassigned `a` to whatever value was in `b`.
+
+You can compare any two R objects with a logical operator; however, logical operators make the most sense if you compare two objects of the same data type. If you compare objects of different data types, R will use its coercion rules to coerce the objects to the same type before it makes the comparison.
+
+#### Subsetting a data frame
+
+Using the oceans data.frame that we built in an earlier class, we can subset the oceans with a depth > 4000m. First we'll test the condition against all ocean depths to find which indices meet the condition depth > 4000.
+
+```{r}
+world_oceans = data.frame(ocean = c("Atlantic", "Pacific", "Indian", "Arctic", "Southern"),
+                           area_km2 = c(77e6, 156e6, 69e6, 14e6, 20e6),
+                           avg_depth_m = c(3926, 4028, 3963, 3953, 4500))
+world_oceans$avg_depth_m > 4000 # test condition
+```
+
+Then we can use `sum()` to quickly count the number of `TRUE`s in the previous vector. R will coerce logicals to numerics when you do math with them. R will turn `TRUE`s into ones and `FALSE`s into zeroes. As a result, sum will count the number of `TRUE`s. Now we can add up the number of entries that met our criteria (and therefore count the average depth variables > 4000m)
+
+```{r}
+sum(world_oceans$avg_depth_m > 4000) # counts oceans with depth > 4000
+```
+
+Now we can use logical subsetting to print out the name of the oceans that meet our depth criteria. Since the logical test that is performed on the `avg_depth_m` variable returns a logical vector, you can use it as an index to find the corresponding `ocean` name variables:
+
+```{r}
+world_oceans$ocean[world_oceans$avg_depth_m > 4000]  # Returns just the ocean names
+world_oceans[world_oceans$avg_depth_m > 4000, ]  # Returns all columns
+```
+
+To summarize, you can use a logical test to select values within an object.
+
+Logical subsetting is a powerful technique because it lets you quickly identify, extract, and modify individual values in your data set. When you work with logical subsetting, you do not need to know where in your data set a value exists. You only need to know how to describe the value with a logical test.
+
+***
+
+### Exercise 2.1
+
+Create a vector with the names of the oceans you have personally visited. Use the `%in%` operator to subset the oceans you have visited from the world_oceans data frame. Now use subsetting to find out whether you have ever personally visited any oceans that have a smaller area than the Atlantic ocean.
+
+***
+
+#### Word of warning
+
+When you use the `==` operator to test the equality of two numbers, you may get unexpected results due to the nuance of storing numbers in binary. This only tends to be an issue when comparing numbers with decimals, not whole numbers. Here is an example:
+
+```{r}
+1 + 2 == 3
+0.1 + 0.2 == 0.3
+```
+
+This is true in most programming languages and is not unique to R. If you want to find out more, read this:
+<https://medium.com/better-programming/why-is-0-1-0-2-not-equal-to-0-3-in-most-programming-languages-99432310d476>
+
+However, the `>` and `<` operators never result in unexpected behavior, so when you need to perform a logical test where this might be a problem, you can change your logic to use `>` or `<` instead along with some error threshold that you are willing to accept (computer rounding errors will be very very very small):
+
+```{r}
+0.3 - (0.1 + 0.2)  # doesn't == zero due to computer "rounding errors"
+
+# Change the logical test:
+error_threshold = 0.000001 
+abs(0.3 - (0.1 + 0.2)) < error_threshold
+```
+
+## Boolean Operators
+
+Boolean operators are things like _and_ (`&`) and _or_ (`|`). They collapse the results of multiple logical tests into a single `TRUE` or `FALSE`. R has six boolean operators:
+
+Table: Boolean operators
+
+|Operator|Syntax|Tests
+|--------|------|-----
+|`&`|`cond1 & cond2`|Are both `cond1` and `cond2` true?
+|`|`|`cond1 | cond2`|Is one or more of `cond1` and `cond2` true?
+|`xor`|`xor(cond1, cond2)`|Is exactly one of `cond1` and `cond2` true?
+|`!`|`!cond1`|Is `cond1` false? (e.g., `!` flips the results of a logical test)
+|`any`|`any(cond1, cond2, cond3, ...)`|Are any of the conditions true?
+|`all`|`all(cond1, cond2, cond3, ...)`|Are all of the conditions true?
+
+To use a Boolean operator, place it between two _complete_ logical tests. R will execute each logical test and then use the Boolean operator to combine the results into a single `TRUE` or `FALSE`. 
+
+**The most common mistake with Boolean operators**
+  
+It is easy to forget to put a complete test on either side of a Boolean operator. In English, it is efficient to say "Is _x_ greater than two and less than nine?" But in R, you need to write the equivalent of "Is _x_ greater than two and _is x_ less than nine?".  
+
+R will evaluate the expressions on each side of a Boolean operator separately, and then combine the results into a single TRUE or FALSE. If you do not supply a complete test to each side of the operator, R will return an error: 
+![](figures/boolean_mistake.png)
+
+Some examples: 
+
+```{r}
+x = 5
+x > 3 & x < 15
+x > 10 & x < 15
+x > 10 | x < 15
+x > 10 & x %in% c(1,3,5,7)
+x > 10 | x %in% c(1,3,5,7)
+x > 10 | !(x %in% c(1,3,5,7))
+```
+
+When used with vectors, Boolean operators will follow the same element-wise execution as arithmetic and logical operators:
+
+```{r}
+a = c(1, 2, 3)
+b = c(1, 2, 3)
+c = c(1, 2, 4)
+a == b
+b == c
+a == b & b == c
+```
+
+We can use a Boolean operator to locate an ocean that has an average depth > 4000m AND an area < 50x10^6 km^2. We can write this test in R with:
+
+```{r}
+world_oceans$ocean[world_oceans$avg_depth_m > 4000 & world_oceans$area_km2 < 50e6]
+
+```
+
+Two other useful functions are `any` and `all`. The `any` function takes a vector of logicals and returns `TRUE` if any of the entries is `TRUE`. The `all` function takes a vector of logicals and returns `TRUE` if all of the entries are `TRUE`. Here is an example:
+
+```{r}
+z = c(TRUE, TRUE, FALSE)
+any(z)
+all(z)
+```
+
+#### Dealing with NA values with `is.na()`
+
+On occasion, you may want to identify the `NA`s in your data set with a logical test, but that too creates a problem. If something is a missing value, any logical test that uses it will return a missing value, even this test:
+
+```{r}
+NA == NA
+```
+
+Which means that tests like this won't help you find missing values:
+
+```{r}
+c(1, 2, 3, NA) == NA
+```
+
+So R supplies the function `is.na()` that can test whether a value is an `NA`. 
+
+```{r}
+is.na(NA)
+vec <- c(1, 2, 3, NA)
+is.na(vec)
+```
+
+***
+
+#### Exercise 2.2
+
+Here are a few random variables. Try converting these sentences into tests written with R code. 
+
+```{r}
+w = 15
+x = c(-1, 0, 1)
+y = "February"
+z = c("Monday", "Tuesday", "January")
+```
+
+-  Is w greater than 10 and less than 20?
+-  Are any of the values in x positive?
+-  Are all of the values in x positive?
+-  Is object y the word February?
+-  How many values in z are days of the week?
+
+***
+
+## Summary
+
+When you work with large data sets, modifying and retrieving values creates a logistical problem of its own. How can you search through the data to find the values that you want to modify or retrieve? As an R user, you can do this with logical subsetting. Create a logical test with logical and Boolean operators and then use the test as an index in R's bracket notation. R will return the values that you are looking for, even if you do not know where they are.
+
+
